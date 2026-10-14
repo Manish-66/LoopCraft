@@ -1,5 +1,9 @@
 langchain
+langchain-google-genai
 langchain-openai
+langchain-community
 langgraph
+duckduckgo-search
+ddgs
 tavily-python
 python-dotenv
