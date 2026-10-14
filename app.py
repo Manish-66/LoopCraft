@@ -239,8 +239,18 @@ if __name__ == "__main__":
 
     config = RunnableConfig(configurable={"thread_id": "loopcraft_run_01"})
 
+    default_topic = "Future of Autonomous AI Agents in Software Development"
+    if len(sys.argv) > 1:
+        task = " ".join(sys.argv[1:])
+    else:
+        try:
+            user_in = input(f"Enter research topic [press Enter for '{default_topic}']: ").strip()
+            task = user_in if user_in else default_topic
+        except EOFError:
+            task = default_topic
+
     initial_input: AgentState = {
-        "task": "Future of Autonomous AI Agents in Software Development",
+        "task": task,
         "plan": "",
         "draft": "",
         "critique": "",
@@ -252,11 +262,27 @@ if __name__ == "__main__":
     print("\n" + "=" * 60)
     print("🚀 LoopCraft Agentic Workflow Started...")
     print(f"📌 Task: {initial_input['task']}")
-    print("=" * 60 + "\n")
+    print("=" * 60)
 
     for event in app.stream(initial_input, config=config):
         node = list(event.keys())[0]
-        print(f"👉 Completed Node: [{node.upper()}]")
+        data = event[node]
+        print(f"\n👉 Completed Node: [{node.upper()}]")
+
+        if node == "planner" and "plan" in data:
+            plan_text = data["plan"]
+            if isinstance(plan_text, list) and len(plan_text) > 0 and "text" in plan_text[0]:
+                plan_text = plan_text[0]["text"]
+            print("📝 [Generated Outline]:")
+            print(str(plan_text).strip())
+
+        elif node == "researcher" and "content" in data:
+            sources = data.get("content", [])
+            print(f"🔎 [Live Web Research]: Gathered {len(sources)} source snippets via search.")
+
+        elif node == "generator" and "draft" in data:
+            rev = data.get("revision_number", 1)
+            print(f"✍️ [Drafting]: Finished revision #{rev}.")
 
     print("\n" + "=" * 60)
     print("🧠 Final Synthesized Draft:")
